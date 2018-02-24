@@ -1,0 +1,226 @@
+country,year,production,consumption
+Algeria,2013,,2147
+Algeria,2014,,2158
+Algeria,2015,,2282
+Algeria,2016,,2350
+Arabicas,2014,86281,
+Arabicas,2015,88433,
+Arabicas,2016,102174,
+Arabicas,2017,98843,
+Australia,2013,,1543
+Australia,2014,,1713
+Australia,2015,,1720
+Australia,2016,,1800
+Bolivia,2014,106,
+Bolivia,2015,89,
+Bolivia,2016,81,
+Bolivia,2017,80,
+Brazil,2013,,20085
+Brazil,2014,52299,20333
+Brazil,2015,50388,20500
+Brazil,2016,5.50E+04,20500
+Brazil,2017,51500,
+Burundi,2014,248,
+Burundi,2015,274,
+Burundi,2016,258,
+Burundi,2017,280,
+Cameroon,2014,483,
+Cameroon,2015,391,
+Cameroon,2016,295,
+Cameroon,2017,375,
+Canada,2013,,3805
+Canada,2014,,3616
+Canada,2015,,3595
+Canada,2016,,3600
+Colombia,2013,,1469
+Colombia,2014,13339,1505
+Colombia,2015,14009,1672
+Colombia,2016,14634,1736
+Colombia,2017,1.40E+04,
+"Congo, DR",2014,335,
+"Congo, DR",2015,371,
+"Congo, DR",2016,324,
+"Congo, DR",2017,335,
+Costa Rica,2013,,335
+Costa Rica,2014,1475,381
+Costa Rica,2015,1440,449
+Costa Rica,2016,1372,329
+Costa Rica,2017,1560,
+Cote d'Ivoire,2013,,317
+Cote d'Ivoire,2014,1750,317
+Cote d'Ivoire,2015,1882,317
+Cote d'Ivoire,2016,1234,317
+Cote d'Ivoire,2017,1500,
+Cuba,2014,101,
+Cuba,2015,100,
+Cuba,2016,103,
+Cuba,2017,100,
+Dominican Republic,2013,,383
+Dominican Republic,2014,397,388
+Dominican Republic,2015,400,388
+Dominican Republic,2016,412,390
+Dominican Republic,2017,400,
+Ecuador,2014,644,
+Ecuador,2015,644,
+Ecuador,2016,645,
+Ecuador,2017,675,
+El Salvador,2013,,275
+El Salvador,2014,665,280
+El Salvador,2015,565,285
+El Salvador,2016,610,292
+El Salvador,2017,740,
+Ethiopia,2013,,3550
+Ethiopia,2014,6575,3625
+Ethiopia,2015,6714,3700
+Ethiopia,2016,7297,3725
+Ethiopia,2017,7650,
+European Union,2013,,41458
+European Union,2014,,42431
+European Union,2015,,42604
+European Union,2016,,42248
+Guatemala,2013,,370
+Guatemala,2014,3310,380
+Guatemala,2015,3410,390
+Guatemala,2016,3684,390
+Guatemala,2017,3800,
+Guinea,2014,165,
+Guinea,2015,246,
+Guinea,2016,219,
+Guinea,2017,215,
+Haiti,2013,,340
+Haiti,2014,343,340
+Haiti,2015,341,340
+Haiti,2016,341,340
+Haiti,2017,340,
+Honduras,2013,,350
+Honduras,2014,5268,355
+Honduras,2015,5786,365
+Honduras,2016,7457,370
+Honduras,2017,8349,
+India,2013,,2100
+India,2014,5450,2200
+India,2015,5800,2250
+India,2016,5200,2300
+India,2017,5840,
+Indonesia,2013,,4167
+Indonesia,2014,11418,4333
+Indonesia,2015,12317,4500
+Indonesia,2016,11491,4600
+Indonesia,2017,10800,
+Japan,2013,,7501
+Japan,2014,,7594
+Japan,2015,,7790
+Japan,2016,,7913
+Kenya,2014,765,
+Kenya,2015,789,
+Kenya,2016,783,
+Kenya,2017,790,
+Laos,2014,499,
+Laos,2015,511,
+Laos,2016,438,
+Laos,2017,475,
+Madagascar,2013,,410
+Madagascar,2014,501,390
+Madagascar,2015,425,370
+Madagascar,2016,415,360
+Madagascar,2017,425,
+Mexico,2013,,2321
+Mexico,2014,3591,2347
+Mexico,2015,2903,2329
+Mexico,2016,3781,2360
+Mexico,2017,4.00E+03,
+Nicaragua,2014,1898,
+Nicaragua,2015,2134,
+Nicaragua,2016,2573,
+Nicaragua,2017,2500,
+Panama,2014,106,
+Panama,2015,127,
+Panama,2016,103,
+Panama,2017,106,
+Papua New Guinea,2014,798,
+Papua New Guinea,2015,712,
+Papua New Guinea,2016,1171,
+Papua New Guinea,2017,1100,
+Peru,2013,,250
+Peru,2014,2883,250
+Peru,2015,3304,250
+Peru,2016,4221,250
+Peru,2017,4600,
+Philippines,2013,,2550
+Philippines,2014,193,2800
+Philippines,2015,208,3.00E+03
+Philippines,2016,215,3.00E+03
+Philippines,2017,200,
+Robustas,2014,62796,
+Robustas,2015,63675,
+Robustas,2016,55520,
+Robustas,2017,60087,
+Russian Federation,2013,,3948
+Russian Federation,2014,,3846
+Russian Federation,2015,,4303
+Russian Federation,2016,,4639
+Rwanda,2014,238,
+Rwanda,2015,292,
+Rwanda,2016,220,
+Rwanda,2017,280,
+Saudi Arabia,2013,,1321
+Saudi Arabia,2014,,1566
+Saudi Arabia,2015,,1405
+Saudi Arabia,2016,,1420
+South Korea,2013,,1873
+South Korea,2014,,1963
+South Korea,2015,,2161
+South Korea,2016,,2300
+Switzerland,2013,,1011
+Switzerland,2014,,1052
+Switzerland,2015,,1069
+Switzerland,2016,,1088
+Tanzania,2014,753,
+Tanzania,2015,930,
+Tanzania,2016,846,
+Tanzania,2017,683,
+Thailand,2013,,1200
+Thailand,2014,785,1250
+Thailand,2015,997,1300
+Thailand,2016,664,1300
+Thailand,2017,500,
+Togo,2014,143,
+Togo,2015,81,
+Togo,2016,22,
+Togo,2017,55,
+Turkey,2013,,892
+Turkey,2014,,1078
+Turkey,2015,,1106
+Turkey,2016,,1200
+Uganda,2013,,221
+Uganda,2014,3744,229
+Uganda,2015,3650,234
+Uganda,2016,4962,240
+Uganda,2017,5100,
+Ukraine,2013,,1246
+Ukraine,2014,,1106
+Ukraine,2015,,1124
+Ukraine,2016,,1130
+USA,2013,,23901
+USA,2014,,23743
+USA,2015,,25336
+USA,2016,,25780
+Venezuela,2013,,1650
+Venezuela,2014,650,1650
+Venezuela,2015,501,1650
+Venezuela,2016,525,1650
+Venezuela,2017,550,
+Vietnam,2013,,2.00E+03
+Vietnam,2014,26500,2200
+Vietnam,2015,28737,2300
+Vietnam,2016,25540,2400
+Vietnam,2017,28500,
+World total,2013,,148891
+World total,2014,149077,151725
+World total,2015,152108,155756
+World total,2016,157694,157382
+World total,2017,158930,
+Yemen,2014,183,
+Yemen,2015,188,
+Yemen,2016,151,
+Yemen,2017,150,

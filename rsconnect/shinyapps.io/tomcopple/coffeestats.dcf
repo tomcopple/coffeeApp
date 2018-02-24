@@ -1,0 +1,12 @@
+name: coffeestats
+title: coffeestats
+username:
+account: tomcopple
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 285016
+bundleId: 1230034
+url: https://tomcopple.shinyapps.io/coffeestats/
+when: 1519054182.89061
+asMultiple: FALSE
+asStatic: FALSE
