@@ -9,16 +9,17 @@ library(tidyverse)
 library(readxl)
 library(plotly)
 library(lubridate)
-# setwd("~/Dropbox/Work/coffeeApp")
-# library(DT)
+library(googlesheets)
+setwd("~/R/coffeeApp")
 
 # Import list of countries for drop-down
-countryList <-
-    read_excel(file.path("data", "country-list.xlsx")) %>%
+countryList <- readr::read_csv(file.path("data", "countries.csv")) %>% 
     filter(type == "Exporting")
 
 # Define UI for application that draws a histogram
 ui <- material_page(
+    
+    ## Some extra CSS to make card text a bit smaller
     tags$head(tags$style(
         HTML("
              .card .card-title {
@@ -26,7 +27,6 @@ ui <- material_page(
              }
              ")
         )),
-    
     
     # Application title
     title = "CoffeeStatsApp",
@@ -44,46 +44,76 @@ ui <- material_page(
     
     # Define tabs
     material_tabs(tabs = c(
+        "Exports" = "exp_tab",
         "Production" = "prod_tab",
-        "Exports" = "exp_tab"
+        "Maintenance" = "maintenance_tab"
     )),
     
     # Production tab content
-    material_tab_content(tab_id = "prod_tab",
-                         material_row(
-                             material_column(width = 6,
-                                             material_card(tableOutput("tableProd"))),
-                             material_column(width = 6,
-                                             material_card(plotlyOutput("graphProd")))
-                         )),
+    material_tab_content(
+        tab_id = "prod_tab",
+        material_row(
+            material_column(width = 6,
+                            material_card(tableOutput("tableProd"))),
+            material_column(width = 6,
+                            material_card(plotlyOutput("graphProd")))
+            )),
     
-    material_tab_content(tab_id = "exp_tab",
-                         material_row(
-                             material_column(width = 6,
-                                             material_card(tableOutput("expTab"))),
-                             material_column(width = 6,
-                                             material_card(plotlyOutput("expGraph")))
-                         ))
+    # Export tab content
+    material_tab_content(
+        tab_id = "exp_tab",
+        material_row(
+            material_column(
+                width = 6,
+                material_card(tableOutput("expTab")),
+                material_card(tableOutput("expTab2"))
+                ),
+            material_column(
+                width = 6,
+                material_card(plotlyOutput("expGraph")),
+                ## Add exports card
+                material_card(
+                    h4("Add new export figure"),
+                    p("NB This will be overwritten by the next ICO update"),
+                    material_date_picker("enterMonth", "Enter export month"),
+                    material_number_box("enterValue", "Enter value ('000 bags)",
+                                        min_value = 0, max_value = 5000, initial_value = ""),
+                    material_button("submitAddExp", "Submit", icon = "send"),
+                    material_button("undoAddExp", "Undo", icon = "undo"))
+                )
+            )
+        ),
+    material_tab_content(
+        tab_id = "maintenance_tab",
+        material_card(
+            material_button("updateICO", label = "Update ICO fundamentals", icon = "refresh")
+        ), 
+        material_card(
+            material_button("updateUSDA", label = "Update all USDA data", icon = "refresh")
+        ),
+        material_card(
+            material_button("getMTS", label = "Get ICO monthly trade stats", icon = "update")
         )
+    )
+)
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    # Load data from USDA. NB Just saved as static data file. To update, run coffeestats::getUSDA()
-    # then copy resulting file into data folder as usda.csv
-    usda <-
-        readr::read_csv(file = file.path("data", "usda.csv"))
     
-    # Load data from ICO. Same as above
-    ico <-
-        readr::read_csv(file = file.path("data", "ico.csv"))
+    # Get Data
+    ## 1. USDA, ICO, flow & MTS from local files
+    usda <- readr::read_csv(file = file.path("data", "usda.csv"))
+    ico <- readr::read_csv(file = file.path("data", "ico.csv"))
+    mts <- readr::read_csv(file = file.path("data", "mts.csv"), col_types = readr::cols())
+    flow <- readxl::read_excel(path = file.path("data", "flow.xlsx")) %>%
+        tidyr::gather(., -series, -source, -country, key = year, value = value) %>%
+        mutate(country = ifelse(grepl("Ivoire", country), "Cote d'Ivoire", country),
+               year = as.integer(year)) %>%
+        filter(source == "ME")
+    # NB Eventually these will be updated and synced to Google Drive
+    # Probably easier to just combine with the other production-estimates below?
     
-    # Get MTS. From static file, but needs to be updateable when new export data is released
-    mts <-
-        readr::read_csv(file = file.path("data", "mts.csv"),
-                        col_types = readr::cols())
-    
-    # Get production-estimates, from Google Drive
-    library(googlesheets)
+    ## 2. Other production estimates from Google Drive
     productionEstimates <-
         googlesheets::gs_key('1H_QsSAgzlgvoB3XWvilhiBUmISlLLd7FI6Q1yDhJMew') %>%
         gs_read() %>%
@@ -91,20 +121,12 @@ server <- function(input, output) {
         summarise(production = sum(production)) %>%
         mutate(date = lubridate::dmy(date))
     
-    # Get my estimates from the flowsheets?
-    flow <-
-        readxl::read_excel(path = file.path("data", "flow.xlsx")) %>%
-        tidyr::gather(.,
-                      -series,
-                      -source,
-                      -country,
-                      key = year,
-                      value = value) %>%
-        mutate(country = ifelse(grepl("Ivoire", country), "Cote d'Ivoire", country),
-               year = as.integer(year)) %>%
-        filter(source == "ME")
+    ## 3. scaleExports from Google Drive
+    # scaleGG <- googlesheets::gs_key('1FL04PtMs9hQBQDfeCY_WgG7qdre7uMuLVa-FkjuvlXE')
+    # scaleExports <- scaleGG %>% gs_read(ws = 'Sheet1')
+    # scaleExportsRaw <- scaleGG %>% gs_read(ws = 'Sheet2')
     
-    # Combine production data?
+    ##  Combine production data? Might be easier to just save like this. 
     prodData <- dplyr::bind_rows(
         usda %>% filter(series == "Production", value > 0, year >= max(year) - 5) %>% select(country, year, production = value) %>% mutate(date = lubridate::today(), source = "USDA"),
         ico %>% select(country, year, production) %>% mutate(date = lubridate::today(), source = "ICO") %>% na.omit(),
@@ -116,33 +138,20 @@ server <- function(input, output) {
         mutate(source = forcats::fct_relevel(source, "Estimate"))
     
     # Get table of production data
-    output$tableProd <- renderTable(
+    output$tableProd <- renderTable({
         filter(prodData, country == input$countryName) %>%
-            mutate(production = prettyNum(round(production, 0), big.mark = ",")) %>%
+            # mutate(production = prettyNum(round(production, 0), big.mark = ",")) %>%
             select(-country,-date) %>%
-            spread(key = year, value = production),
-        digits = 0,
-        na = "",
-        striped = TRUE,
-        width = "100%"
-    )
+            spread(key = year, value = production)
+    },  digits = 0, na = "", format.args = list(big.mark = ","))
     
-    # output$tableProd <- DT::renderDataTable(
-    #     filter(prodData, country == input$countryName) %>%
-    #         mutate(production = prettyNum(round(production,0), big.mark = ",")) %>%
-    #         select(-country, -date) %>%
-    #         spread(key = year, value = production)
-    # )
-    
+    # Plotly graph of production estimates
     output$graphProd <- renderPlotly({
         plot_ly(
             data = filter(prodData, country == input$countryName) %>%
                 arrange(source, year, production) %>% group_by(source),
-            type = "scatter",
-            mode = "lines",
-            x = ~ year,
-            y = ~ production,
-            color = ~ source,
+            type = "scatter", mode = "lines",
+            x = ~ year, y = ~ production, color = ~ source,
             text = ~ paste0(source, ": ", round(production, 1), "<br>", date),
             hoverinfo = "text"
         ) %>%
@@ -153,80 +162,51 @@ server <- function(input, output) {
             )
     })
     
-    # output$graphProd <- renderPlot(
-    #     prodData %>%
-    #         filter(country == input$countryName) %>%
-    #         ggplot(aes(x = year, y = production, group = source, color = source)) +
-    #         geom_line() +
-    #         scale_x_discrete("") +
-    #         scale_y_continuous("") +
-    #         ggtitle(paste("Proudction by", input$countryName))
-    #         # theme(title = paste("Production by", input$countryName))
-    #
-    #
-    # )
+    # Export tab
+    source("scripts/predExportsApp.R")
+    values <- reactiveValues(exportData = NULL)
     
-    
-    # Export tab!
-    # Import scaleExports & scaleExportsRaw and join together
-    scaleGG <-
-        googlesheets::gs_key('1FL04PtMs9hQBQDfeCY_WgG7qdre7uMuLVa-FkjuvlXE')
-    scaleExports <- scaleGG %>% gs_read(ws = 'Sheet1')
-    scaleExportsRaw <- scaleGG %>% gs_read(ws = 'Sheet2')
-    
-    
-    # Get tables and graphs
-    getCountryRaw <- reactive({
-        full_join(
-            x = filter(scaleExportsRaw, country == input$countryName) %>%
-                arrange(month) %>%
-                mutate(cropMonth = ordered(
-                    lubridate::month(month),
-                    levels = unique(lubridate::month(month)),
-                    labels = unique(month.abb[lubridate::month(month)])
-                )),
-            y = filter(scaleExports, country == input$countryName),
-            by = "country"
-        )
+    # If country name changes, run again
+    observeEvent(input$countryName, {
+        values$exportData <- predExportsApp(input$countryName)
     })
     
-    getCountrySummary <- reactive({
-        countryRaw <- getCountryRaw()
-        full_join(
-            x = countryRaw %>%
-                filter(cropYear.x == cropYear.y) %>%
-                select(country, cropMonth, actual = value, scaleExports),
-            y = countryRaw %>%
-                filter(cropYear.x != cropYear.y) %>%
-                group_by(cropMonth) %>%
-                mutate(
-                    min = min(value),
-                    max = max(value),
-                    prediction = avShare * scaleExports
-                ) %>%
-                select(country, cropMonth, min, max, prediction) %>%
-                slice(1)
-        ) %>%
-            full_join(
-                x = .,
-                y = countryRaw %>%
-                    filter(cropYear.x == cropYear.y - 1) %>%
-                    select(country, cropMonth, lastYear = value)
-            ) %>%
-            mutate(exportsToDate = cumsum(actual))
+    # If someone input data and clicks submit, run again
+    observeEvent(input$submitAddExp, {
+        enterMonth <- input$enterMonth %>% 
+            lubridate::dmy() %>% 
+            lubridate::floor_date(unit = "month")
+        enterValue <- input$enterValue
+        enterCountry <- input$countryName
+        
+        # enterValue <- 1500
+        # enterCountry <- "Colombia"
+        # enterMonth <- lubridate::dmy("01-01-2018")
+        
+        if(!is.na(enterValue) & enterValue > 0) {
+            newMTS <- bind_rows(
+                mts, 
+                data_frame(
+                    country = enterCountry,
+                    month = enterMonth,
+                    value = enterValue
+                )
+            )
+            
+            values$exportData <- predExportsApp(enterCountry, dataset = newMTS)
+        }
     })
     
-
-    
+    # If someone clicks undo, just go back to normal. 
+    observeEvent(input$undoAddExp, {
+        values$exportData <- predExportsApp(input$countryName)
+    })
+   
+    # Plotly graph of exports
     output$expGraph <- renderPlotly({
-        countrySummary <- getCountrySummary()
-        print(head(countrySummary))
-        print(countrySummary$cropMonth)
-        countrySummary <- countrySummary %>%
-            mutate(cropMonth = ordered(
-                cropMonth, levels = unique(cropMonth)
-            ))
-        print(countrySummary$cropMonth)
+        countrySummary <- values$exportData
+        country <- input$countryName
+        
         plot_ly(countrySummary, x = ~cropMonth) %>%
             add_ribbons(
                 name = "Min/max",
@@ -238,13 +218,13 @@ server <- function(input, output) {
                 opacity = 0.4
             ) %>%
             add_lines(
-                name = "Prediction",
-                y = ~ prediction,
+                name = "Prediction", showlegend = FALSE,
+                y = ~ pred,
                 line = list(color = "#cc593d", dash = "dash"),
                 text = ~ paste0(
                     cropMonth,
                     " prediction: ",
-                    format(round(prediction, 1), big.mark = ",")
+                    format(round(pred, 1), big.mark = ",")
                 ),
                 hoverinfo = "text"
             ) %>%
@@ -257,6 +237,14 @@ server <- function(input, output) {
                 hoverinfo = "text"
             ) %>%
             add_lines(
+                name = "Average flow",
+                y = ~avFlow,
+                line = list(color = "#4aac71"),
+                text = ~paste0(cropMonth, " avg flow: ",
+                               format(round(avFlow, 1), big.mark = ",")),
+                hoverinfo = "text"
+            ) %>%
+            add_lines(
                 name = "Last year",
                 y = ~ lastYear,
                 line = list(color = "#659fb5"),
@@ -265,7 +253,7 @@ server <- function(input, output) {
                 hoverinfo = "text"
             ) %>%
             layout(
-                title = paste("Export prediction function for", input$countryName),
+                title = paste("Export flow for", country),
                 xaxis = list(title = ""),
                 yaxis = list(
                     title = "",
@@ -276,19 +264,37 @@ server <- function(input, output) {
             )
     })
     
+    # Table of exports to date (excluding totalPrediction)
     output$expTab <- renderTable({
-        countrySummary <- getCountrySummary()
-        countrySummary %>% 
-            select(Month = cropMonth, Actual = actual, Prediction = prediction, 
-                   exportsToDate, totalPrediction = scaleExports)
-    },
-    digits = 0,
-    na = "",
-    format.args = list(big.mark = ",")
-    # striped = TRUE
-    )
+        countrySummary <- values$exportData
+        country <- input$countryName
+        countrySummary %>%
+            mutate(
+                exportsToDate = cumsum(actual),
+                Month = ifelse(is.na(actual), 
+                               paste0("<em>", cropMonth, "</em>"), 
+                               as.character(cropMonth)),
+                Exports = ifelse(is.na(actual), 
+                                 paste0("<em>", prettyNum(round(pred,0),big.mark = ","), "</em>"),
+                                 prettyNum(round(actual, 0), big.mark = ","))) %>% 
+            select(Month, Exports, exportsToDate)
+        },
+        digits = 0, na = "", format.args = list(big.mark = ","),
+        sanitize.text.function = function(x) x)
+    
+    # Table 2: summary of exports last year and prediction for this year
+    output$expTab2 <- renderTable({
+        country <- input$countryName
+        countrySummary <- values$exportData
+        countrySummary %>%
+            mutate(totalLastYear = sum(lastYear)) %>%
+            mutate(country = country) %>% 
+            select(country, totalPrediction = totalPred, totalLastYear) %>%
+            na.omit() %>%
+            distinct()},
+        digits = 0, na = "", format.args = list(big.mark = ","))
+    
 }
 
 # Run the application
 shinyApp(ui = ui, server = server)
-
