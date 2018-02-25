@@ -5,8 +5,8 @@ account: tomcopple
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 285016
-bundleId: 1230034
+bundleId: 1239103
 url: https://tomcopple.shinyapps.io/coffeestats/
-when: 1519054182.89061
+when: 1519576628.49767
 asMultiple: FALSE
 asStatic: FALSE

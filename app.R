@@ -10,7 +10,7 @@ library(readxl)
 library(plotly)
 library(lubridate)
 library(googlesheets)
-setwd("~/R/coffeeApp")
+# setwd("~/R/coffeeApp")
 
 # Import list of countries for drop-down
 countryList <- readr::read_csv(file.path("data", "countries.csv")) %>% 
@@ -122,9 +122,7 @@ server <- function(input, output) {
         mutate(date = lubridate::dmy(date))
     
     ## 3. scaleExports from Google Drive
-    # scaleGG <- googlesheets::gs_key('1FL04PtMs9hQBQDfeCY_WgG7qdre7uMuLVa-FkjuvlXE')
-    # scaleExports <- scaleGG %>% gs_read(ws = 'Sheet1')
-    # scaleExportsRaw <- scaleGG %>% gs_read(ws = 'Sheet2')
+    ## Not anymore, just needs MTS
     
     ##  Combine production data? Might be easier to just save like this. 
     prodData <- dplyr::bind_rows(
@@ -239,7 +237,7 @@ server <- function(input, output) {
             add_lines(
                 name = "Average flow",
                 y = ~avFlow,
-                line = list(color = "#4aac71"),
+                line = list(color = "#4aac71", shape = "spline"),
                 text = ~paste0(cropMonth, " avg flow: ",
                                format(round(avFlow, 1), big.mark = ",")),
                 hoverinfo = "text"
