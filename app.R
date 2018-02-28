@@ -10,7 +10,7 @@ library(readxl)
 library(plotly)
 library(lubridate)
 library(googlesheets)
-# setwd("~/R/coffeeApp")
+# setwd("coffeeApp")
 
 # Import list of countries for drop-down
 countryList <- readr::read_csv(file.path("data", "countries.csv")) %>% 
