@@ -1,0 +1,12 @@
+name: coffeeApp
+title: coffeeApp
+username:
+account: tomcopple
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 290056
+bundleId: 1353324
+url: https://tomcopple.shinyapps.io/coffeeApp/
+when: 1525339240.45413
+asMultiple: FALSE
+asStatic: FALSE

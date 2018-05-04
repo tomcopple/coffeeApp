@@ -288,7 +288,11 @@ server <- function(input, output, session) {
     country <- input$countryName
     countrySummary %>%
       mutate(
-        exportsToDate = cumsum(actual),
+        exportsRaw = ifelse(is.na(actual), pred, actual),
+        exportsToDateRaw = cumsum(exportsRaw),
+        exportsToDate = ifelse(is.na(actual),
+                               paste0("<em>", prettyNum(round(exportsToDateRaw, 0), big.mark = ","), "</em>"),
+                               prettyNum(round(exportsToDateRaw,0), big.mark = ",")),
         Month = ifelse(is.na(actual), 
                        paste0("<em>", cropMonth, "</em>"), 
                        as.character(cropMonth)),
