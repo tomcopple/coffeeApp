@@ -104,7 +104,9 @@ server <- function(input, output, session) {
   values <- reactiveValues()
   
   ## 1. USDA, ICO, flow & MTS from local files
-  usda <- readr::read_csv(file = file.path("data", "usda.csv"))
+  values$usda <-googlesheets::gs_key('14Qlc9UYRQju3uOVO8-cEOjFDwf4Z5TnOLlcyHUgW9Ls') %>% 
+    gs_read()
+  
   ico <- readr::read_csv(file = file.path("data", "ico.csv"))
   # mts <- readr::read_csv(file = file.path("data", "mts.csv"), col_types = readr::cols())
   flow <- readxl::read_excel(path = file.path("data", "flow.xlsx")) %>%
@@ -127,8 +129,9 @@ server <- function(input, output, session) {
   
   
   ##  Combine production data? Might be easier to just save like this. 
-  prodData <- dplyr::bind_rows(
-    usda %>% filter(series == "Production", value > 0, year >= max(year) - 5) %>% select(country, year, production = value) %>% mutate(date = lubridate::today(), source = "USDA"),
+  values$prodData <- reactive({
+    dplyr::bind_rows(
+    values$usda %>% mutate(date = lubridate::today(), source = "USDA"),
     ico %>% select(country, year, production) %>% mutate(date = lubridate::today(), source = "ICO") %>% na.omit(),
     productionEstimates,
     flow %>% filter(series == "Production") %>% mutate(source = "Estimate", date = lubridate::today()) %>% select(country, year, source, date, production = value)
@@ -136,10 +139,11 @@ server <- function(input, output, session) {
     na.omit() %>%
     filter(year > max(year) - 4) %>%
     mutate(source = forcats::fct_relevel(source, "Estimate"))
+  })
   
   # Get table of production data
   output$tableProd <- renderTable({
-    filter(prodData, country == input$countryName) %>%
+    filter(values$prodData(), country == input$countryName) %>%
       # mutate(production = prettyNum(round(production, 0), big.mark = ",")) %>%
       select(-country,-date) %>%
       spread(key = year, value = production)
@@ -148,7 +152,7 @@ server <- function(input, output, session) {
   # Plotly graph of production estimates
   output$graphProd <- renderPlotly({
     plot_ly(
-      data = filter(prodData, country == input$countryName) %>%
+      data = filter(values$prodData(), country == input$countryName) %>%
         arrange(source, year, production) %>% group_by(source),
       type = "scatter", mode = "lines",
       x = ~ year, y = ~ production, color = ~ source,
@@ -214,9 +218,22 @@ server <- function(input, output, session) {
       shiny::showNotification("Done!", type = "message")
       
       material_spinner_hide(session, "getMTS")
+      }
+    })
+  
+  ## Update USDA (twice per year)
+  observeEvent(input$updateUSDA, {
+    print(input$updateUSDA) 
+    if(input$updateUSDA > 0) {
+      material_spinner_show(session, "updateUSDA")
+      
+      shiny::showNotification("Updating USDA production data", type = "default")
+      source("scripts/updateUSDA.R")
+      values$usda <- updateUSDA()
+      shiny::showNotification("Done!", type = "message")
+      
+      material_spinner_hide(session, "updateUSDA")
     }
-    
-    
   })
   
   # Plotly graph of exports
