@@ -21,7 +21,8 @@ updateUSDA <- function() {
     )) %>% 
     # value = as.character(value)) %>% 
     filter(year >= max(year) - 4) %>% 
-    select(country, year, production = value)
+    select(country, year, production = value) %>% 
+    mutate(date = lubridate::today(), source = "USDA")
   
   write_csv(usda, "newUSDA.csv")
   

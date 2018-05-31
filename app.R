@@ -107,15 +107,9 @@ server <- function(input, output, session) {
   values$usda <-googlesheets::gs_key('14Qlc9UYRQju3uOVO8-cEOjFDwf4Z5TnOLlcyHUgW9Ls') %>% 
     gs_read()
   
-  ico <- readr::read_csv(file = file.path("data", "ico.csv"))
-  # mts <- readr::read_csv(file = file.path("data", "mts.csv"), col_types = readr::cols())
-  flow <- readxl::read_excel(path = file.path("data", "flow.xlsx")) %>%
-    tidyr::gather(., -series, -source, -country, key = year, value = value) %>%
-    mutate(country = ifelse(grepl("Ivoire", country), "Cote d'Ivoire", country),
-           year = as.integer(year)) %>%
-    filter(source == "ME")
-  # NB Eventually these will be updated and synced to Google Drive
-  # Probably easier to just combine with the other production-estimates below?
+  values$ico <- googlesheets::gs_key('19KWMSK432oLf2eFdvr7oZI5fuhasDJgjd1gno8Ccu4k') %>% 
+    gs_read()
+  
   values$mts <- googlesheets::gs_key('1oGCBkr_LjMuCYU7k6_zp0PEfP3X-SvcNXZdtYzGOLNA') %>% 
     gs_read()
   
@@ -131,14 +125,12 @@ server <- function(input, output, session) {
   ##  Combine production data? Might be easier to just save like this. 
   values$prodData <- reactive({
     dplyr::bind_rows(
-    values$usda %>% mutate(date = lubridate::today(), source = "USDA"),
-    ico %>% select(country, year, production) %>% mutate(date = lubridate::today(), source = "ICO") %>% na.omit(),
-    productionEstimates,
-    flow %>% filter(series == "Production") %>% mutate(source = "Estimate", date = lubridate::today()) %>% select(country, year, source, date, production = value)
+    values$usda,
+    values$ico %>% na.omit(),
+    productionEstimates
   ) %>%
     na.omit() %>%
-    filter(year > max(year) - 4) %>%
-    mutate(source = forcats::fct_relevel(source, "Estimate"))
+    filter(year > max(year) - 5)
   })
   
   # Get table of production data
@@ -153,7 +145,8 @@ server <- function(input, output, session) {
   output$graphProd <- renderPlotly({
     plot_ly(
       data = filter(values$prodData(), country == input$countryName) %>%
-        arrange(source, year, production) %>% group_by(source),
+        arrange(source, year, production) %>% group_by(source) %>% 
+        mutate(year = as.factor(year)),
       type = "scatter", mode = "lines",
       x = ~ year, y = ~ production, color = ~ source,
       text = ~ paste0(source, ": ", round(production, 1), "<br>", date),
@@ -161,7 +154,7 @@ server <- function(input, output, session) {
     ) %>%
       plotly::layout(
         title = paste("Production by", input$countryName),
-        xaxis = list(title = "", showgrid = FALSE),
+        xaxis = list(title = "", showgrid = FALSE, tickformat = ',d'),
         yaxis = list(title = "", zeroline = FALSE)
       )
   })
@@ -233,6 +226,20 @@ server <- function(input, output, session) {
       shiny::showNotification("Done!", type = "message")
       
       material_spinner_hide(session, "updateUSDA")
+    }
+  })
+  
+  ## Update ICO production (as and when)
+  observeEvent(input$updateICO, {
+    if(input$updateICO > 0) {
+      material_spinner_show(session, "updateICO")
+      
+      shiny::showNotification("Updating ICO production data", type = "default")
+      source("scripts/updateICO.R")
+      values$ico <- updateICO()
+      shiny::showNotification("Done!", type = "message")
+      
+      material_spinner_hide(session, "updateICO")
     }
   })
   
