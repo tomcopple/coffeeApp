@@ -4,7 +4,7 @@ getMTS <- function() {
   pdfTable <- 'http://www.ico.org/prices/m3-exports.pdf'
   
   # Use the tabulizer package to extract from pdf
-  mts <- tabulizer::extract_tables(pdfTable, method = 'data.frame')[[1]] %>%
+  mts <- tabulizer::extract_tables(pdfTable, output = 'data.frame')[[1]] %>%
     gather(., -X, key = month, value = value) %>%
     # Fix some of the results
     mutate(
